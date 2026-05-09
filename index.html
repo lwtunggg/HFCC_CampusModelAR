@@ -2,17 +2,153 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>HFCC Campus AR</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     <style>
-      body { margin: 0; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+
+      /* ── Splash ── */
+      #splash {
+        position: fixed; inset: 0; z-index: 999;
+        background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 50%, #0d1b2a 100%);
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 24px;
+        color: #fff; font-family: 'Segoe UI', sans-serif;
+        transition: opacity 0.6s ease;
+      }
+      #splash.hidden { opacity: 0; pointer-events: none; }
+
+      .logo-ring {
+        width: 110px; height: 110px; border-radius: 50%;
+        border: 3px solid rgba(100,180,255,0.3);
+        border-top-color: #64b4ff;
+        animation: spin 1.4s linear infinite;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .logo-ring::after { content: '🏫'; font-size: 44px; animation: spin 1.4s linear infinite reverse; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      .splash-title {
+        font-size: clamp(20px, 5vw, 28px); font-weight: 700;
+        letter-spacing: 2px; text-align: center;
+        background: linear-gradient(90deg, #64b4ff, #a78bfa, #64b4ff);
+        background-size: 200%;
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        animation: shimmer 2.5s linear infinite;
+      }
+      @keyframes shimmer { to { background-position: 200% center; } }
+
+      .splash-sub { font-size: 13px; color: rgba(255,255,255,0.55); letter-spacing: 1px; }
+
+      .splash-steps {
+        display: flex; flex-direction: column; gap: 10px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 16px; padding: 20px 28px;
+        max-width: 320px; width: 90%;
+      }
+      .splash-steps p { font-size: 13px; color: rgba(255,255,255,0.75); display: flex; gap: 10px; align-items: flex-start; }
+      .splash-steps span.num {
+        background: #64b4ff; color: #000; border-radius: 50%;
+        width: 20px; height: 20px; display: flex; align-items: center;
+        justify-content: center; font-size: 11px; font-weight: 700;
+        flex-shrink: 0; margin-top: 1px;
+      }
+
+      .start-btn {
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        border: none; color: #fff; padding: 14px 40px;
+        border-radius: 50px; font-size: 16px; font-weight: 700;
+        cursor: pointer; letter-spacing: 1px;
+        box-shadow: 0 0 30px rgba(99,102,241,0.5);
+        transition: transform 0.15s;
+      }
+      .start-btn:active { transform: scale(0.96); }
+
+      /* ── HUD ── */
+      #hud {
+        position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+        pointer-events: none; padding: 16px 20px;
+        display: none; justify-content: space-between; align-items: flex-start;
+      }
+      #hud.visible { display: flex; }
+      .hud-badge {
+        background: rgba(0,0,0,0.55);
+        border: 1px solid rgba(255,255,255,0.15);
+        backdrop-filter: blur(12px);
+        border-radius: 12px; padding: 8px 14px;
+        color: #fff; font-family: 'Segoe UI', sans-serif; font-size: 12px;
+      }
+      .hud-badge strong { display: block; font-size: 14px; color: #64b4ff; }
+
+      #status-dot {
+        width: 8px; height: 8px; border-radius: 50%;
+        background: #f59e0b; display: inline-block;
+        margin-right: 6px; vertical-align: middle;
+        animation: pulse 1.5s ease-in-out infinite;
+      }
+      #status-dot.found { background: #10b981; animation: none; }
+      @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+      /* ── Scan hint ── */
+      #scan-hint {
+        position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
+        z-index: 10; pointer-events: none;
+        background: rgba(0,0,0,0.6);
+        border: 1px solid rgba(100,180,255,0.3);
+        backdrop-filter: blur(10px);
+        border-radius: 50px; padding: 10px 24px;
+        color: rgba(255,255,255,0.8); font-size: 13px;
+        font-family: 'Segoe UI', sans-serif;
+        display: none; align-items: center; gap: 10px;
+      }
+      #scan-hint.visible { display: flex; }
+      #scan-hint.hidden { display: none; }
+      .scan-icon { font-size: 18px; animation: bounce 1.2s ease-in-out infinite; }
+      @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+
+      a-scene { position: fixed; inset: 0; }
     </style>
   </head>
   <body>
+
+    <!-- Splash -->
+    <div id="splash">
+      <div class="logo-ring"></div>
+      <div class="splash-title">HFCC CAMPUS AR</div>
+      <div class="splash-sub">Laser Model · Augmented Reality</div>
+      <div class="splash-steps">
+        <p><span class="num">1</span>Tap Launch AR below</p>
+        <p><span class="num">2</span>Allow camera access</p>
+        <p><span class="num">3</span>Point at the laser-cut campus model</p>
+      </div>
+      <button class="start-btn" id="startBtn">Launch AR</button>
+    </div>
+
+    <!-- HUD -->
+    <div id="hud">
+      <div class="hud-badge">
+        <strong>HFCC Campus</strong>
+        Augmented Reality
+      </div>
+      <div class="hud-badge">
+        <span id="status-dot"></span>
+        <span id="status-text">Searching…</span>
+      </div>
+    </div>
+
+    <!-- Scan hint -->
+    <div id="scan-hint">
+      <span class="scan-icon">📷</span>
+      Point camera at the campus model
+    </div>
+
+    <!-- AR Scene -->
     <a-scene
-      mindar-image="imageTargetSrc: /targets/campus.mind;"
+      mindar-image="imageTargetSrc: /targets/campus.mind; autoStart: false; uiLoading: no; uiError: no; uiScanning: no;"
       color-space="sRGB"
       vr-mode-ui="enabled: false"
       device-orientation-permission-ui="enabled: false"
@@ -20,10 +156,100 @@
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <a-entity mindar-image-target="targetIndex: 0">
-        <a-box position="0 0.1 0" color="#64b4ff" opacity="0.8"></a-box>
-        <a-text value="HFCC Campus" position="0 0.5 0" align="center" color="white"></a-text>
+        <a-entity id="campus-overlay">
+
+          <!-- Glowing base -->
+          <a-box position="0 0.01 0" width="1.6" height="0.02" depth="1.1"
+            color="#001833" opacity="0.75" material="transparent:true;"></a-box>
+
+          <!-- Main building -->
+          <a-box position="0 0.35 -0.18" width="0.28" height="0.7" depth="0.18"
+            color="#0a2a4a" opacity="0.85" material="transparent:true;"
+            animation="property:position; from:0 0.05 -0.18; to:0 0.35 -0.18; dur:900; easing:easeOutElastic;">
+          </a-box>
+
+          <!-- Left wing -->
+          <a-box position="-0.42 0.28 -0.1" width="0.22" height="0.56" depth="0.16"
+            color="#0d2b3e" opacity="0.85" material="transparent:true;"
+            animation="property:position; from:-0.42 0.05 -0.1; to:-0.42 0.28 -0.1; dur:1000; easing:easeOutElastic; delay:100;">
+          </a-box>
+
+          <!-- Right tower -->
+          <a-box position="0.46 0.38 -0.05" width="0.18" height="0.76" depth="0.16"
+            color="#0d2b3e" opacity="0.85" material="transparent:true;"
+            animation="property:position; from:0.46 0.05 -0.05; to:0.46 0.38 -0.05; dur:1000; easing:easeOutElastic; delay:200;">
+          </a-box>
+
+          <!-- Basketball court -->
+          <a-plane position="0 0.02 0.18" width="0.5" height="0.35"
+            rotation="-90 0 0" color="#0052cc" opacity="0.55"
+            material="transparent:true; side:double;"></a-plane>
+
+          <!-- Labels -->
+          <a-text value="HFCC Campus" position="0 0.85 -0.18"
+            align="center" color="#64b4ff" width="1.8"
+            animation="property:position; from:0 0.55 -0.18; to:0 0.85 -0.18; dur:1200; easing:easeOutElastic; delay:300;">
+          </a-text>
+          <a-text value="Basketball Court" position="0 0.12 0.18"
+            align="center" color="#a78bfa" width="1.0"></a-text>
+
+          <!-- Spinning ring -->
+          <a-ring position="0 0.03 0" radius-inner="0.6" radius-outer="0.62"
+            rotation="-90 0 0" color="#64b4ff" opacity="0.6"
+            animation="property:rotation; from:-90 0 0; to:-90 360 0; dur:4000; loop:true; easing:linear;">
+          </a-ring>
+
+          <!-- Pulsing orb -->
+          <a-sphere position="0 0.05 0.18" radius="0.03" color="#8b5cf6" opacity="0.9"
+            animation="property:scale; from:1 1 1; to:1.6 1.6 1.6; dur:900; loop:true; dir:alternate; easing:easeInOutSine;">
+          </a-sphere>
+
+        </a-entity>
       </a-entity>
 
     </a-scene>
+
+    <script>
+      const splash    = document.getElementById('splash');
+      const startBtn  = document.getElementById('startBtn');
+      const hud       = document.getElementById('hud');
+      const scanHint  = document.getElementById('scan-hint');
+      const statusDot = document.getElementById('status-dot');
+      const statusTxt = document.getElementById('status-text');
+
+      startBtn.addEventListener('click', () => {
+        // Hide splash
+        splash.classList.add('hidden');
+        setTimeout(() => splash.style.display = 'none', 700);
+
+        // Show HUD and hint
+        hud.classList.add('visible');
+        scanHint.classList.add('visible');
+
+        // Start MindAR
+        const scene = document.querySelector('a-scene');
+        const start = () => {
+          const sys = scene.systems['mindar-image-system'];
+          if (sys) sys.start();
+        };
+        scene.hasLoaded ? start() : scene.addEventListener('loaded', start, { once: true });
+      });
+
+      // Target events
+      document.querySelector('[mindar-image-target]')?.addEventListener('targetFound', () => {
+        statusDot.classList.add('found');
+        statusTxt.textContent = 'Model Detected!';
+        scanHint.classList.remove('visible');
+        scanHint.classList.add('hidden');
+      });
+
+      document.querySelector('[mindar-image-target]')?.addEventListener('targetLost', () => {
+        statusDot.classList.remove('found');
+        statusTxt.textContent = 'Searching…';
+        scanHint.classList.remove('hidden');
+        scanHint.classList.add('visible');
+      });
+    </script>
+
   </body>
 </html>
