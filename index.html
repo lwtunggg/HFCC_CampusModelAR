@@ -8,7 +8,7 @@
     <!-- 1. Load A-Frame and MindAR -->
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v7.0.0/dist/aframe-extras.min.js"></script>
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       
@@ -115,16 +115,25 @@
       vr-mode-ui="enabled: false"
       device-orientation-permission-ui="enabled: false"
     >
-      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+      <a-assets>
+          <!-- Pre-load the cat model -->
+          <a-asset-item id="catModel" src="/models/oiiaioooooiai_cat.glb"></a-asset-item>
+      </a-assets>
 
       <a-entity mindar-image-target="targetIndex: 0">
-        <!-- Blue Box Overlay (Test if this shows up) -->
-        <a-box position="0 0.1 0" scale="0.5 0.5 0.5" color="blue" opacity="0.6"></a-box>
-        
-        <a-entity id="campus-overlay">
-           <!-- Your buildings and animations go here -->
-           <a-text value="HFCC Campus" position="0 0.5 0" align="center"></a-text>
-        </a-entity>
+        <!-- 
+          src: points to the ID in assets
+          position: 0 0 0 sits it right on the tracking image
+          scale: start small, cats in 3D are often huge!
+          animation-mixer: tells the cat to start its animation loop
+        -->
+        <a-gltf-model 
+          src="#catModel" 
+          position="0 0 0" 
+          scale="0.2 0.2 0.2" 
+          rotation="0 0 0"
+          animation-mixer>
+        </a-gltf-model>
       </a-entity>
     </a-scene>
 
