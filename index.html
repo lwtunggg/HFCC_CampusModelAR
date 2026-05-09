@@ -4,15 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>HFCC Campus AR</title>
-    
-    <!-- 1. Core A-Frame -->
+
+    <!-- 1. A-Frame First -->
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
 
-    <!-- 2. A-Frame Extras (Load this BEFORE MindAR to prevent Three.js conflicts) -->
-    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.0.0/dist/aframe-extras.min.js"></script>
-
-    <!-- 3. MindAR -->
+    <!-- 2. MindAR Second -->
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+
+    <!-- 3. A-Frame Extras (Specific version to stop the Three.js conflict) -->
+    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
 
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -113,34 +113,30 @@
     <!-- 2. The Scene -->
     <!-- Note: imageTargetSrc uses a leading / to work with Vite public folder -->
     <a-scene
-        mindar-image="imageTargetSrc: /targets/campus.mind; autoStart: false; uiLoading: no; uiError: no; uiScanning: no;"
-        color-space="sRGB"
-        embedded
-        renderer="colorManagement: true, physicallyCorrectLights: true; antialias: true;"
-        vr-mode-ui="enabled: false"
-        device-orientation-permission-ui="enabled: false"
-    >
-      <a-assets>
-          <!-- Pre-load the cat model -->
-          <a-asset-item id="catModel" src="/models/oiiaioooooiai_cat.glb"></a-asset-item>
-      </a-assets>
+    mindar-image="imageTargetSrc: /targets/campus.mind; autoStart: false; uiLoading: no; uiError: no; uiScanning: no;"
+    color-space="sRGB"
+    embedded
+    renderer="colorManagement: true, physicallyCorrectLights: true"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false"
+  >
+    <a-assets>
+      <!-- Ensure this path is 100% correct in your public folder -->
+      <a-asset-item id="catModel" src="/models/oiiaioooooiai_cat.glb"></a-asset-item>
+    </a-assets>
 
-      <a-entity mindar-image-target="targetIndex: 0">
-        <!-- 
-          src: points to the ID in assets
-          position: 0 0 0 sits it right on the tracking image
-          scale: start small, cats in 3D are often huge!
-          animation-mixer: tells the cat to start its animation loop
-        -->
-        <a-gltf-model 
-          src="#catModel" 
-          position="0 0.1 0" 
-          scale="0.2 0.2 0.2" 
-          rotation="0 0 0"
-          animation-mixer="clip: *; loop: repeat; timeScale: 1">
-        </a-gltf-model>
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+    <a-entity mindar-image-target="targetIndex: 0">
+      <!-- We use 'gltf-model' directly and simplified animation-mixer -->
+      <a-entity 
+        gltf-model="#catModel" 
+        position="0 0 0" 
+        scale="0.1 0.1 0.1" 
+        animation-mixer>
       </a-entity>
-    </a-scene>
+    </a-entity>
+  </a-scene>
 
     <script>
       const splash = document.getElementById('splash');
