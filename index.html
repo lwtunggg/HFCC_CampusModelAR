@@ -15,85 +15,106 @@
     <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
 
     <style>
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      
-      /* CRITICAL FIX: Make sure the body/html are transparent so camera shows through */
-      html, body { 
-        width: 100%; 
-        height: 100%; 
-        overflow: hidden; 
-        background: transparent !important; 
-      }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  html, body { 
+    width: 100%; 
+    height: 100%; 
+    overflow: hidden; 
+    background: transparent !important; 
+    font-family: 'Segoe UI', Roboto, sans-serif;
+  }
 
-      /* ── Splash ── */
-      #splash {
-        position: fixed; inset: 0; z-index: 999;
-        background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 50%, #0d1b2a 100%);
-        display: flex; flex-direction: column;
-        align-items: center; justify-content: center; gap: 24px;
-        color: #fff; font-family: 'Segoe UI', sans-serif;
-        transition: opacity 0.6s ease;
-      }
-      #splash.hidden { opacity: 0; pointer-events: none; }
+  /* ── Splash Screen ── */
+  #splash {
+    position: fixed; inset: 0; z-index: 999;
+    background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 50%, #eceff1 100%);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 30px;
+    transition: opacity 0.8s ease;
+  }
+  #splash.hidden { opacity: 0; pointer-events: none; }
 
-      .logo-ring {
-        width: 110px; height: 110px; border-radius: 50%;
-        border: 3px solid rgba(100,180,255,0.3);
-        border-top-color: #64b4ff;
-        animation: spin 1.4s linear infinite;
-        display: flex; align-items: center; justify-content: center;
-      }
-      .logo-ring::after { content: '🏫'; font-size: 44px; animation: spin 1.4s linear infinite reverse; }
-      @keyframes spin { to { transform: rotate(360deg); } }
+  /* ── Logo Ring & Centered Emoji ── */
+  .logo-ring {
+    width: 120px; height: 120px; border-radius: 50%;
+    border: 5px solid #f48fb1;
+    border-top-color: #90a4ae; /* Grey accent */
+    animation: spin 2s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+    display: flex; 
+    align-items: center;      /* Vertically centers emoji */
+    justify-content: center;   /* Horizontally centers emoji */
+    background: white;
+    box-shadow: 0 10px 25px rgba(244, 143, 177, 0.3);
+    position: relative;
+  }
 
-      .splash-title {
-        font-size: clamp(20px, 5vw, 28px); font-weight: 700;
-        letter-spacing: 2px; text-align: center;
-        background: linear-gradient(90deg, #64b4ff, #a78bfa, #64b4ff);
-        background-size: 200%;
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        animation: shimmer 2.5s linear infinite;
-      }
-      @keyframes shimmer { to { background-position: 200% center; } }
+  /* The Emoji */
+  .logo-ring::after { 
+    content: '🩶'; 
+    font-size: 55px; 
+    line-height: 1; /* Prevents vertical offset */
+    display: block;
+    /* This counter-rotates the emoji so it stays upright while the ring spins */
+    animation: unspin 2s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+  }
 
-      .start-btn {
-        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-        border: none; color: #fff; padding: 14px 40px;
-        border-radius: 50px; font-size: 16px; font-weight: 700;
-        cursor: pointer; letter-spacing: 1px;
-        box-shadow: 0 0 30px rgba(99,102,241,0.5);
-      }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  @keyframes unspin { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
 
-      /* ── HUD & HINTS ── */
-      #hud {
-        position: fixed; top: 0; left: 0; right: 0; z-index: 10;
-        pointer-events: none; padding: 16px 20px;
-        display: none; justify-content: space-between; align-items: flex-start;
-      }
-      #hud.visible { display: flex; }
-      .hud-badge {
-        background: rgba(0,0,0,0.6);
-        backdrop-filter: blur(10px);
-        border-radius: 12px; padding: 8px 14px; color: #fff; font-family: sans-serif;
-      }
-      #status-dot { width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; display: inline-block; margin-right: 6px; }
-      #status-dot.found { background: #10b981; }
+  .splash-title {
+    font-size: 26px; font-weight: 800;
+    letter-spacing: 3px; text-align: center;
+    color: #880e4f;
+  }
 
-      #scan-hint {
-        position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
-        z-index: 10; background: rgba(0,0,0,0.7); color: white;
-        padding: 10px 20px; border-radius: 50px; display: none;
-      }
-      #scan-hint.visible { display: block; }
+  /* ── Dark Grey Launch Button ── */
+  .start-btn {
+    background: #37474f; /* Deep Slate Grey */
+    border: 2px solid #f8bbd0; /* Pink border accent */
+    color: #fce4ec; /* Light pink text */
+    padding: 18px 50px;
+    border-radius: 12px; /* Slightly more modern square-ish edges */
+    font-size: 16px; font-weight: 700;
+    cursor: pointer; letter-spacing: 2px;
+    text-transform: uppercase;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+  }
+  .start-btn:hover { background: #263238; transform: translateY(-2px); }
+  .start-btn:active { transform: scale(0.98); }
 
-      /* CRITICAL FIX: Ensure MindAR video is visible */
-      .mindar-ui-overlay { display: none !important; }
-      video {
-        position: absolute;
-        top: 0; left: 0;
-        z-index: -2 !important; /* Forces video behind the AR objects */
-      }
-    </style>
+  /* ── HUD ── */
+  #hud {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+    pointer-events: none; padding: 20px;
+    display: none; justify-content: space-between;
+  }
+  #hud.visible { display: flex; }
+  .hud-badge {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    border-radius: 10px; padding: 10px 15px; 
+    color: #37474f; font-weight: 700;
+  }
+
+  #status-dot { 
+    width: 10px; height: 10px; border-radius: 50%; 
+    background: #cfd8dc; display: inline-block; margin-right: 8px; 
+  }
+  #status-dot.found { background: #f06292; box-shadow: 0 0 10px #f06292; }
+
+  #scan-hint {
+    position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
+    z-index: 10; background: rgba(55, 71, 79, 0.9);
+    color: white; padding: 12px 25px; border-radius: 8px; 
+    display: none;
+  }
+  #scan-hint.visible { display: block; }
+
+  .mindar-ui-overlay { display: none !important; }
+  video { position: absolute; top: 0; left: 0; z-index: -2 !important; }
+</style>
   </head>
   <body>
 
