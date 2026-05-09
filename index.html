@@ -5,10 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>HFCC Campus AR</title>
     
-    <!-- 1. Load A-Frame and MindAR -->
+    <!-- 1. Core A-Frame -->
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+
+    <!-- 2. A-Frame Extras (Load this BEFORE MindAR to prevent Three.js conflicts) -->
+    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.0.0/dist/aframe-extras.min.js"></script>
+
+    <!-- 3. MindAR -->
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v7.0.0/dist/aframe-extras.min.js"></script>
+
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       
@@ -108,12 +113,12 @@
     <!-- 2. The Scene -->
     <!-- Note: imageTargetSrc uses a leading / to work with Vite public folder -->
     <a-scene
-      mindar-image="imageTargetSrc: /targets/campus.mind; autoStart: false; uiLoading: no; uiError: no; uiScanning: no;"
-      color-space="sRGB"
-      embedded
-      renderer="colorManagement: true, physicallyCorrectLights: true"
-      vr-mode-ui="enabled: false"
-      device-orientation-permission-ui="enabled: false"
+        mindar-image="imageTargetSrc: /targets/campus.mind; autoStart: false; uiLoading: no; uiError: no; uiScanning: no;"
+        color-space="sRGB"
+        embedded
+        renderer="colorManagement: true, physicallyCorrectLights: true; antialias: true;"
+        vr-mode-ui="enabled: false"
+        device-orientation-permission-ui="enabled: false"
     >
       <a-assets>
           <!-- Pre-load the cat model -->
@@ -129,10 +134,10 @@
         -->
         <a-gltf-model 
           src="#catModel" 
-          position="0 0 0" 
+          position="0 0.1 0" 
           scale="0.2 0.2 0.2" 
           rotation="0 0 0"
-          animation-mixer>
+          animation-mixer="clip: *; loop: repeat; timeScale: 1">
         </a-gltf-model>
       </a-entity>
     </a-scene>
